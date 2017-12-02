@@ -200,10 +200,6 @@
 				"url": {
 					"raw": "{{endpoint-api3.0}}/users?lang=en&notify=false",
 					"protocol": "{{endpoint-api3.0}}/users?lang=en",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
 					"path": [
 						"&notify=false"
 					],
@@ -794,10 +790,6 @@
 				"url": {
 					"raw": "{{endpoint-api3.0}}/users?lang=en&notify=true",
 					"protocol": "{{endpoint-api3.0}}/users?lang=en",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
 					"path": [
 						"&notify=true"
 					],
@@ -1656,11 +1648,6 @@
 							"value": "it",
 							"equals": true
 						},
-						{
-							"key": "callback",
-							"value": "http%3A%2F%2Flocalhost%3A8080%2F",
-							"equals": true
-						}
 					]
 				},
 				"description": "forgot password api by UUID with new endpoint, introduced in TID 6.3 release \n\nRef: https://ejira.trimble.com/browse/TPAAS-4545\n\nThe new endpoint is : https://api-stg.trimble.com/t/trimble.com/identity/3.0/users/password?uuid={{uuid}}"
@@ -1721,11 +1708,6 @@
 							"value": "en",
 							"equals": true
 						},
-						{
-							"key": "callback",
-							"value": "http%3A%2F%2Flocalhost%3A8080%2F",
-							"equals": true
-						}
 					]
 				},
 				"description": "forgot password api by email with new endpoint, introduced in TID 6.3 release \n\nRef: https://ejira.trimble.com/browse/TPAAS-4545\n\nThe new endpoint is : https://api-stg.trimble.com/t/trimble.com/identity/3.0/users/password?uuid={{uuid}}"
