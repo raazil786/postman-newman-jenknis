@@ -1,0 +1,1977 @@
+{
+	"info": {
+		"name": "SMOKE - Identity APIs - v3.0 - KM",
+		"_postman_id": "e7a0188a-83c7-f865-d53a-1a4f4c14664e",
+		"description": "These are Smoke tests, and all these tests should pass to accept the build for further testing.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1_Token Request",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"var data = JSON.parse(responseBody);\r",
+							"\r",
+							"postman.setGlobalVariable(\"tid_token\", data.access_token);\r",
+							"postman.setEnvironmentVariable(\"tid_token\", data.access_token);\r",
+							"postman.setGlobalVariable(\"raAccess_Token\", data.access_token);\r",
+							"postman.setGlobalVariable(\"access_token\", data.access_token);\r",
+							"postman.setGlobalVariable(\"tid_id_token\", data.id_token);\r",
+							"postman.setGlobalVariable(\"tid_refresh_token\", data.refresh_token);\r",
+							"\r",
+							"\r",
+							"if(postman.getEnvironmentVariable(\"authheader\") === \"X-JWT-Assertion\"){\r",
+							"    postman.setNextRequest(\"2_JWT Request\");    \r",
+							"}\r",
+							"else\r",
+							"{\r",
+							"     postman.setNextRequest(\"2_Add User_Single\");    \r",
+							"}\r",
+							"\r",
+							"try{\r",
+							"    tests[\"Body contains access token\"] = responseBody.has(\"access_token\");\r",
+							"    tests[\"User Retived Successfully \"] = responseCode.code === 200 \r",
+							"}\r",
+							"catch (e) {\r",
+							"}\r",
+							"\r",
+							"eval(postman.getGlobalVariable('postmanBDD'));\r",
+							"\r",
+							"describe('Get Access token info', function() {\r",
+							"   it('should return Token data', function() {\r",
+							"           response.should.have.status(200);\r",
+							"            response.should.be.json;\r",
+							"            response.body.should.be.empty;\r",
+							"           response.should.have.header('content-type', 'application/json');\r",
+							"           response.body.should.have.property('scope','openid');\r",
+							"           response.body.should.have.property('access_token').and.not.empty;\r",
+							"   });\r",
+							"\r",
+							"   \r",
+							"   });\r",
+							"\r",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic {{base64key}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "grant_type=password&username={{tid_username}}&password={{tid_password}}&scope=openid&tenantDomain=trimble.com"
+				},
+				"url": {
+					"raw": "{{url}}/oauth2/token",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"oauth2",
+						"token"
+					]
+				},
+				"description": "View Account for given Account Name;\n\nPattern: /accounts/{accountname}"
+			},
+			"response": []
+		},
+		{
+			"name": "2_JWT Request",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"var data = JSON.parse(responseBody);\r",
+							"postman.setGlobalVariable(\"jwt_token\", data.jwt);\r",
+							"try{\r",
+							"    tests[\"Body contains jwt token\"] = responseBody.has(\"jwt\");\r",
+							"    tests[\"User Retived Successfully \"] = responseCode.code === 200 \r",
+							"}\r",
+							"catch (e) {\r",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Basic {{base64key}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"token_type_hint\":\"bearer\",\n  \"token\":{{tid_token}}\n}"
+				},
+				"url": {
+					"raw": "{{endpoint}}/keymanagerservices/introspect",
+					"host": [
+						"{{endpoint}}"
+					],
+					"path": [
+						"keymanagerservices",
+						"introspect"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "3_User - Add - API3.0",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);",
+							"postman.setEnvironmentVariable(\"uuid1\", jsonData.uuid);",
+							"postman.setGlobalVariable(\"userName\", data.userName);",
+							"postman.setEnvironmentVariable(\"firstName\", data.firstName);",
+							"postman.setEnvironmentVariable(\"lastName\", data.lastName);",
+							"",
+							"",
+							"var a = jsonData.passwordPolicyType;",
+							"",
+							"tests[\"Add new user\"] = responseCode.code === 201;"
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"postman.setEnvironmentVariable(\"account\", \"Rajil-\"+ Date.now()+\".com\");\r",
+							"//postman.setEnvironmentVariable(\"account\", \"outlook.com\");\r",
+							"postman.setEnvironmentVariable(\"user\", \"R'aj'il-\"+ Date.now());\r",
+							"\r",
+							"var rawEmail = \"rajil_contractor+tid\" + Date.now() + \"@trimble.com\";\r",
+							"\r",
+							"var replace1 = rawEmail.replace(\"@\",\"%40\");\r",
+							"var replace2 = replace1.replace(\"+\",\"%2b\");\r",
+							"postman.setEnvironmentVariable(\"email\", rawEmail);\r",
+							"postman.setEnvironmentVariable(\"existing_email\", rawEmail);\r",
+							"postman.setEnvironmentVariable(\"email_encoded\", replace2);\r",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "{{authheader}}",
+						"value": "{{authheadervalue}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\r\n\"name\": \"R'C'\",\r\n\"firstName\": \"I'G'H\",\r\n\"lastName\": \"la'stnam'e\",\r\n\"password\": \"Password@123\",\r\n\"confirmPassword\": \"Password@123\",\r\n\"email\": \"{{email}}\",\r\n\"accountName\": \"{{account}}\",\r\n\"contactNumber\": \"123129999a\",\r\n\"roleList\": [\"UserProvisionAdmin\"],\r\n\"zipCode\" : \"52\"\r\n}\r\n"
+				},
+				"url": {
+					"raw": "{{endpoint-api3.0}}/users?lang=en&http://localhost:8080/&notify=false",
+					"protocol": "{{endpoint-api3.0}}/users?lang=en&http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"&notify=false"
+					],
+					"query": [
+						{
+							"key": "lang",
+							"value": "en",
+							"equals": true
+						},
+						{
+							"key": "http://localhost:8080/",
+							"value": "",
+							"equals": false
+						},
+						{
+							"key": "notify",
+							"value": "false",
+							"equals": true
+						}
+					]
+				},
+				"description": "Adding a single user, where Username, Name, First Name and Last Name has two apostrophes in the requeest body.\n\nExpected: User should create successfully. The http response should be \"201 Cretead\"."
+			},
+			"response": []
+		},
+		{
+			"name": "4_Get User with UUID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);",
+							"",
+							"tests[\"Successfully Retrieve the user details by UUID \"] = responseCode.code === 200;",
+							"",
+							"tests[\"Response time is less than 5 Seconds\"] = responseTime < 5000;"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "{{authheader}}",
+						"value": "{{authheadervalue}}"
+					}
+				],
+				"body": {},
+				"url": {
+					"raw": "{{endpoint-api3.0}}/users?uuid={{uuid1}}",
+					"host": [
+						"{{endpoint-api3.0}}"
+					],
+					"path": [
+						"users"
+					],
+					"query": [
+						{
+							"key": "uuid",
+							"value": "{{uuid1}}",
+							"equals": true
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "6_Get User with Email ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Successfully Retrieve the user details by Email ID\"] = responseCode.code === 200;"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "{{authheader}}",
+						"value": "{{authheadervalue}}"
+					}
+				],
+				"body": {},
+				"url": {
+					"raw": "{{endpoint-api3.0}}/users?email={{email_encoded}}",
+					"host": [
+						"{{endpoint-api3.0}}"
+					],
+					"path": [
+						"users"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "{{email_encoded}}",
+							"equals": true
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "7_Change Password By EMAIL API 3.0",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"User's password has been successfully changed by Email \"] = responseCode.code === 204;"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "{{authheader}}",
+						"value": "{{authheadervalue}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"confirmPassword\": \"Trimble@123\",\r\n  \"newPassword\": \"Trimble@123\"\r\n}"
+				},
+				"url": {
+					"raw": "{{endpoint-api3.0}}/users/password/email/{{email_encoded}}",
+					"host": [
+						"{{endpoint-api3.0}}"
+					],
+					"path": [
+						"users",
+						"password",
+						"email",
+						"{{email_encoded}}"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "8_Change Password By UUID API 3.0",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"User's password has been successfully changed\"] = responseCode.code === 204;"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "{{authheader}}",
+						"value": "{{authheadervalue}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \r\n \"newPassword\": \"Atroad@123\",\r\n  \"confirmPassword\": \"Atroad@123\"\r\n  \r\n}"
+				},
+				"url": {
+					"raw": "{{endpoint-api3.0}}/users/password/uuid/{{uuid1}}",
+					"host": [
+						"{{endpoint-api3.0}}"
+					],
+					"path": [
+						"users",
+						"password",
+						"uuid",
+						"{{uuid1}}"
+					]
+				},
+				"description": ""
+			},
+			"response": [
+				{
+					"id": "b8934d18-618a-45f8-b247-9e43d64109e9",
+					"name": "Change PWD",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "{{authheader}}",
+								"value": "{{authheadervalue}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \r\n \"newPassword\": \"Atroad@123\",\r\n  \"confirmPassword\": \"Atroad@123\"\r\n  \r\n}"
+						},
+						"url": {
+							"raw": "{{endpoint-api3.0}}/users/password/uuid/{{uuid1}}",
+							"host": [
+								"{{endpoint-api3.0}}"
+							],
+							"path": [
+								"users",
+								"password",
+								"uuid",
+								"{{uuid1}}"
+							]
+						},
+						"description": ""
+					},
+					"status": "Internal Server Error",
+					"code": 500,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*",
+							"name": "Access-Control-Allow-Origin",
+							"description": ""
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate",
+							"name": "Cache-Control",
+							"description": ""
+						},
+						{
+							"key": "Connection",
+							"value": "Close",
+							"name": "Connection",
+							"description": ""
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": ""
+						},
+						{
+							"key": "CorrelationId",
+							"value": "9e794c25-69e1-44c4-b4d7-2aa9acc7cf27",
+							"name": "CorrelationId",
+							"description": ""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 21 Feb 2017 11:40:37 GMT",
+							"name": "Date",
+							"description": ""
+						},
+						{
+							"key": "Expires",
+							"value": "0",
+							"name": "Expires",
+							"description": ""
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache",
+							"name": "Pragma",
+							"description": ""
+						},
+						{
+							"key": "Server",
+							"value": "nginx",
+							"name": "Server",
+							"description": ""
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000 ; includeSubDomains",
+							"name": "Strict-Transport-Security",
+							"description": ""
+						},
+						{
+							"key": "TPaaS-Request-Id",
+							"value": "26688-1487677237.372-155.63.241.22-498-33884953",
+							"name": "TPaaS-Request-Id",
+							"description": ""
+						},
+						{
+							"key": "X-Application-Context",
+							"value": "application",
+							"name": "X-Application-Context",
+							"description": ""
+						},
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff",
+							"name": "X-Content-Type-Options",
+							"description": ""
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY",
+							"name": "X-Frame-Options",
+							"description": ""
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block",
+							"name": "X-XSS-Protection",
+							"description": ""
+						},
+						{
+							"key": "transfer-encoding",
+							"value": "chunked",
+							"name": "transfer-encoding",
+							"description": ""
+						}
+					],
+					"cookie": [],
+					"responseTime": "2571",
+					"body": "{\"status\":500,\"code\":9000,\"message\":\"An internal error occurred while performing this operation, Reason - null\",\"link\":\"Please provide this id to TPaaS, while contacting, CorrelationId: 9e794c25-69e1-44c4-b4d7-2aa9acc7cf27\",\"developerMessage\":\"com.trimble.paas.identity.exception.error.IdentityException: [Message: An internal error occurred while performing this operation, Reason - null, Cause: java.lang.NullPointerException]\\n\\tat com.trimble.paas.identity.exception.handler.TidExceptionHandler.handleException(TidExceptionHandler.java:87)\\n\\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\\n\\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\\n\\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\\n\\tat java.lang.reflect.Method.invoke(Method.java:606)\\n\\tat org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:220)\\n\\tat org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:134)\\n\\tat org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:116)\\n\\tat org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver.doResolveHandlerMethodException(ExceptionHandlerExceptionResolver.java:381)\\n\\tat org.springframework.web.servlet.handler.AbstractHandlerMethodExceptionResolver.doResolveException(AbstractHandlerMethodExceptionResolver.java:59)\\n\\tat org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver.resolveException(AbstractHandlerExceptionResolver.java:136)\\n\\tat org.springframework.web.servlet.handler.HandlerExceptionResolverComposite.resolveException(HandlerExceptionResolverComposite.java:74)\\n\\tat org.springframework.web.servlet.DispatcherServlet.processHandlerException(DispatcherServlet.java:1193)\\n\\tat org.springframework.web.servlet.DispatcherServlet.processDispatchResult(DispatcherServlet.java:1030)\\n\\tat org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:980)\\n\\tat org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:897)\\n\\tat org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:970)\\n\\tat org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:872)\\n\\tat javax.servlet.http.HttpServlet.service(HttpServlet.java:755)\\n\\tat org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:846)\\n\\tat javax.servlet.http.HttpServlet.service(HttpServlet.java:848)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:303)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.boot.web.filter.ApplicationContextHeaderFilter.doFilterInternal(ApplicationContextHeaderFilter.java:55)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat com.trimble.paas.identity.authentication.JWTTokenAuthenticationFilter.successfulAuthentication(JWTTokenAuthenticationFilter.java:113)\\n\\tat org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:240)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.boot.actuate.trace.WebRequestTraceFilter.doFilterInternal(WebRequestTraceFilter.java:105)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:317)\\n\\tat org.springframework.security.web.access.intercept.FilterSecurityInterceptor.invoke(FilterSecurityInterceptor.java:127)\\n\\tat org.springframework.security.web.access.intercept.FilterSecurityInterceptor.doFilter(FilterSecurityInterceptor.java:91)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:115)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:137)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:111)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:169)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat com.trimble.paas.identity.authentication.JWTTokenAuthenticationFilter.successfulAuthentication(JWTTokenAuthenticationFilter.java:113)\\n\\tat org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:240)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:121)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:66)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:105)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:56)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:214)\\n\\tat org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:177)\\n\\tat org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:346)\\n\\tat org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:262)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:197)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.boot.actuate.autoconfigure.MetricsFilter.doFilterInternal(MetricsFilter.java:107)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter.doFilter(ErrorPageFilter.java:117)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter.access$000(ErrorPageFilter.java:61)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter$1.doFilterInternal(ErrorPageFilter.java:92)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter.doFilter(ErrorPageFilter.java:110)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:220)\\n\\tat org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:122)\\n\\tat org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:501)\\n\\tat org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:171)\\n\\tat org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:103)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CompositeValve.continueInvocation(CompositeValve.java:178)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CarbonTomcatValve$1.invoke(CarbonTomcatValve.java:47)\\n\\tat org.wso2.carbon.webapp.mgt.TenantLazyLoaderValve.invoke(TenantLazyLoaderValve.java:57)\\n\\tat org.wso2.carbon.tomcat.ext.valves.TomcatValveContainer.invokeValves(TomcatValveContainer.java:47)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CompositeValve.invoke(CompositeValve.java:141)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CarbonStuckThreadDetectionValve.invoke(CarbonStuckThreadDetectionValve.java:156)\\n\\tat org.wso2.carbon.ui.valve.XSSValve.invoke(XSSValve.java:118)\\n\\tat org.wso2.carbon.ui.valve.CSRFValve.invoke(CSRFValve.java:72)\\n\\tat org.apache.catalina.valves.AccessLogValve.invoke(AccessLogValve.java:950)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CarbonContextCreatorValve.invoke(CarbonContextCreatorValve.java:52)\\n\\tat org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:116)\\n\\tat org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:408)\\n\\tat org.apache.coyote.http11.AbstractHttp11Processor.process(AbstractHttp11Processor.java:1070)\\n\\tat org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:611)\\n\\tat org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1736)\\n\\tat org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.run(NioEndpoint.java:1695)\\n\\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)\\n\\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)\\n\\tat org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)\\n\\tat java.lang.Thread.run(Thread.java:745)\\nCaused by: java.lang.NullPointerException\\n\\tat com.trimble.paas.identity.utils.Wso2Utils.getUserStoreManager(Wso2Utils.java:194)\\n\\tat com.trimble.paas.identity.service.impl.Wso2UserControllerServiceImpl.updateCredentialForxTenant(Wso2UserControllerServiceImpl.java:547)\\n\\tat com.trimble.paas.identity.service.impl.Wso2UserControllerServiceImpl.changePasswordByUuid(Wso2UserControllerServiceImpl.java:463)\\n\\tat com.trimble.paas.identity.controller.UserController.changePasswordByUuid(UserController.java:154)\\n\\tat com.trimble.paas.identity.controller.UserController$$FastClassBySpringCGLIB$$849607d2.invoke(<generated>)\\n\\tat org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:204)\\n\\tat org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:720)\\n\\tat org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:157)\\n\\tat org.springframework.security.access.intercept.aopalliance.MethodSecurityInterceptor.invoke(MethodSecurityInterceptor.java:69)\\n\\tat org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)\\n\\tat org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:655)\\n\\tat com.trimble.paas.identity.controller.UserController$$EnhancerBySpringCGLIB$$ee7dd5e8.changePasswordByUuid(<generated>)\\n\\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\\n\\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\\n\\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\\n\\tat java.lang.reflect.Method.invoke(Method.java:606)\\n\\tat org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:220)\\n\\tat org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:134)\\n\\tat org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:116)\\n\\tat org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:827)\\n\\tat org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:738)\\n\\tat org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:85)\\n\\tat org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:963)\\n\\t... 93 more\\nCaused by:\\njava.lang.NullPointerException\\n\\tat com.trimble.paas.identity.utils.Wso2Utils.getUserStoreManager(Wso2Utils.java:194)\\n\\tat com.trimble.paas.identity.service.impl.Wso2UserControllerServiceImpl.updateCredentialForxTenant(Wso2UserControllerServiceImpl.java:547)\\n\\tat com.trimble.paas.identity.service.impl.Wso2UserControllerServiceImpl.changePasswordByUuid(Wso2UserControllerServiceImpl.java:463)\\n\\tat com.trimble.paas.identity.controller.UserController.changePasswordByUuid(UserController.java:154)\\n\\tat com.trimble.paas.identity.controller.UserController$$FastClassBySpringCGLIB$$849607d2.invoke(<generated>)\\n\\tat org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:204)\\n\\tat org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:720)\\n\\tat org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:157)\\n\\tat org.springframework.security.access.intercept.aopalliance.MethodSecurityInterceptor.invoke(MethodSecurityInterceptor.java:69)\\n\\tat org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)\\n\\tat org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:655)\\n\\tat com.trimble.paas.identity.controller.UserController$$EnhancerBySpringCGLIB$$ee7dd5e8.changePasswordByUuid(<generated>)\\n\\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\\n\\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\\n\\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\\n\\tat java.lang.reflect.Method.invoke(Method.java:606)\\n\\tat org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:220)\\n\\tat org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:134)\\n\\tat org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:116)\\n\\tat org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:827)\\n\\tat org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:738)\\n\\tat org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:85)\\n\\tat org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:963)\\n\\tat org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:897)\\n\\tat org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:970)\\n\\tat org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:872)\\n\\tat javax.servlet.http.HttpServlet.service(HttpServlet.java:755)\\n\\tat org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:846)\\n\\tat javax.servlet.http.HttpServlet.service(HttpServlet.java:848)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:303)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.boot.web.filter.ApplicationContextHeaderFilter.doFilterInternal(ApplicationContextHeaderFilter.java:55)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat com.trimble.paas.identity.authentication.JWTTokenAuthenticationFilter.successfulAuthentication(JWTTokenAuthenticationFilter.java:113)\\n\\tat org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:240)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.boot.actuate.trace.WebRequestTraceFilter.doFilterInternal(WebRequestTraceFilter.java:105)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:317)\\n\\tat org.springframework.security.web.access.intercept.FilterSecurityInterceptor.invoke(FilterSecurityInterceptor.java:127)\\n\\tat org.springframework.security.web.access.intercept.FilterSecurityInterceptor.doFilter(FilterSecurityInterceptor.java:91)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:115)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:137)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:111)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:169)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat com.trimble.paas.identity.authentication.JWTTokenAuthenticationFilter.successfulAuthentication(JWTTokenAuthenticationFilter.java:113)\\n\\tat org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:240)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:121)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:66)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:105)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:56)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:214)\\n\\tat org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:177)\\n\\tat org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:346)\\n\\tat org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:262)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:197)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.boot.actuate.autoconfigure.MetricsFilter.doFilterInternal(MetricsFilter.java:107)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter.doFilter(ErrorPageFilter.java:117)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter.access$000(ErrorPageFilter.java:61)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter$1.doFilterInternal(ErrorPageFilter.java:92)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter.doFilter(ErrorPageFilter.java:110)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:220)\\n\\tat org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:122)\\n\\tat org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:501)\\n\\tat org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:171)\\n\\tat org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:103)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CompositeValve.continueInvocation(CompositeValve.java:178)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CarbonTomcatValve$1.invoke(CarbonTomcatValve.java:47)\\n\\tat org.wso2.carbon.webapp.mgt.TenantLazyLoaderValve.invoke(TenantLazyLoaderValve.java:57)\\n\\tat org.wso2.carbon.tomcat.ext.valves.TomcatValveContainer.invokeValves(TomcatValveContainer.java:47)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CompositeValve.invoke(CompositeValve.java:141)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CarbonStuckThreadDetectionValve.invoke(CarbonStuckThreadDetectionValve.java:156)\\n\\tat org.wso2.carbon.ui.valve.XSSValve.invoke(XSSValve.java:118)\\n\\tat org.wso2.carbon.ui.valve.CSRFValve.invoke(CSRFValve.java:72)\\n\\tat org.apache.catalina.valves.AccessLogValve.invoke(AccessLogValve.java:950)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CarbonContextCreatorValve.invoke(CarbonContextCreatorValve.java:52)\\n\\tat org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:116)\\n\\tat org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:408)\\n\\tat org.apache.coyote.http11.AbstractHttp11Processor.process(AbstractHttp11Processor.java:1070)\\n\\tat org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:611)\\n\\tat org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1736)\\n\\tat org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.run(NioEndpoint.java:1695)\\n\\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)\\n\\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)\\n\\tat org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)\\n\\tat java.lang.Thread.run(Thread.java:745)\\n\"}"
+				}
+			]
+		},
+		{
+			"name": "9_Forgot Pwd by UUID API 3.0",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Password Set Successfully\"] = responseCode.code === 200;"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "{{authheader}}",
+						"value": "{{authheadervalue}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{endpoint-api3.0}}/users/forgotpassword/uuid/{{uuid1}}?application=APICloud&lang=en",
+					"host": [
+						"{{endpoint-api3.0}}"
+					],
+					"path": [
+						"users",
+						"forgotpassword",
+						"uuid",
+						"{{uuid1}}"
+					],
+					"query": [
+						{
+							"key": "application",
+							"value": "APICloud",
+							"equals": true
+						},
+						{
+							"key": "lang",
+							"value": "en",
+							"equals": true
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "10_Forgot Pwd by EMAIL API 3.0",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Password Set Successfully\"] = responseCode.code === 200;"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "{{authheader}}",
+						"value": "{{authheadervalue}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{endpoint-api3.0}}/users/forgotpassword/email/{{email_encoded}}?application=APICloud&lang=it",
+					"host": [
+						"{{endpoint-api3.0}}"
+					],
+					"path": [
+						"users",
+						"forgotpassword",
+						"email",
+						"{{email_encoded}}"
+					],
+					"query": [
+						{
+							"key": "application",
+							"value": "APICloud",
+							"equals": true
+						},
+						{
+							"key": "lang",
+							"value": "it",
+							"equals": true
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "11_Add User_Without Password",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);",
+							"postman.setEnvironmentVariable(\"uuid2\", jsonData.uuid);",
+							"//tests[\"Email verified\"] = jsonData.emailVerified === \"NO\";",
+							"//tests[\"Current Status\"] = jsonData.currentStatus === \"WAITING_FOR_EMAIL_VERIFICATION\";",
+							"tests[\"Add user without password\"] = responseCode.code === 201;",
+							""
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"postman.setEnvironmentVariable(\"account\", \"Rajil-\"+ Date.now()+\".com\");\r",
+							"postman.setEnvironmentVariable(\"user\", \"Rajil-\"+ Date.now());\r",
+							"\r",
+							"\r",
+							"var rawEmail = \"rajil_contractor+tid\" + Date.now() + \"@trimble.com\";\r",
+							"\r",
+							"var replace1 = rawEmail.replace(\"@\",\"%40\");\r",
+							"var replace2 = replace1.replace(\"+\",\"%2b\");\r",
+							"postman.setEnvironmentVariable(\"email\", rawEmail);\r",
+							"postman.setEnvironmentVariable(\"email_encoded\", replace2);"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "{{authheader}}",
+						"value": "{{authheadervalue}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"name\": \"RC\",\r\n\"userName\"    : \"{{user}}\",\r\n\"firstName\": \"FirstName\",\r\n\"email\": \"{{email}}\",\r\n\"accountName\": \"today-04-01-2017\",\r\n\"contactNumber\": \"123129999a\",\r\n\"roleList\": [\r\n        \"UserProvisionAdmin\"\r\n        ],\r\n\"lastName\": \"lastname\",\r\n\"zipCode\" : \"52\",\r\n  \"extraParams\"     : {\"recipient-display-user-name\": \"Rajil C\", \"domain-name-1\": \"wow-super.com\",\"application-name\": \"TID-TEST\"}\r\n}\r\n"
+				},
+				"url": {
+					"raw": "{{endpoint-api3.0}}/users?lang=it&callback=https://api.trimble.com&notify=true",
+					"protocol": "{{endpoint-api3.0}}/users?lang=it&callback=https",
+					"host": [
+						"api",
+						"trimble",
+						"com&notify=true"
+					],
+					"query": [
+						{
+							"key": "lang",
+							"value": "it",
+							"equals": true
+						},
+						{
+							"key": "callback",
+							"value": "https://api.trimble.com",
+							"equals": true
+						},
+						{
+							"key": "notify",
+							"value": "true",
+							"equals": true
+						}
+					]
+				},
+				"description": "In Add User POST request body we are not including Password field, and adding a user without password.\n\nIdeally, add user request should be successfull, and user should be created. "
+			},
+			"response": []
+		},
+		{
+			"name": "12_Add User Lite",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);",
+							"postman.setEnvironmentVariable(\"uuid3\", jsonData.uuid);",
+							"tests[\"Add User Lite\"] = responseCode.code === 201;"
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"postman.setEnvironmentVariable(\"account\", \"Rajil-\"+ Date.now()+\".com\");\r",
+							"postman.setEnvironmentVariable(\"user\", \"Rajil-\"+ Date.now());\r",
+							"\r",
+							"\r",
+							"var rawEmail = \"rajil_contractor+tid\" + Date.now() + \"@trimble.com\";\r",
+							"\r",
+							"var replace1 = rawEmail.replace(\"@\",\"%40\");\r",
+							"var replace2 = replace1.replace(\"+\",\"%2b\");\r",
+							"postman.setEnvironmentVariable(\"email\", rawEmail);\r",
+							"postman.setEnvironmentVariable(\"email_encoded\", replace2);"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "{{authheader}}",
+						"value": "{{authheadervalue}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"name\": \"RC\",\r\n\"userName\"    : \"{{user}}\",\r\n\"firstName\": \"FirstName\",\r\n\"lastName\": \"lastname\",\r\n\"password\": \"Password@123\",\r\n\"confirmPassword\": \"Password@123\",\r\n\"email\": \"{{email}}\",\r\n\"accountName\": \"today-04-01-2017\",\r\n\"contactNumber\": \"123129999a\",\r\n\"roleList\": [\r\n        \"UserProvisionAdmin\"\r\n        ],\r\n\r\n\"address\":\"Tidel Park\",\r\n\"city\":\"Chennai\",\r\n\"Country\":\"India\",\r\n\"zipCode\" : \"52\",\r\n\"socialFederatedIdOne\": \"string_ONE\",\r\n  \"extraParams\"     : {\"recipient-display-user-name\": \"Rajil C\", \"domain-name-1\": \"wow-super.com\",\"application-name\": \"TID-TEST\"}\r\n}\r\n"
+				},
+				"url": {
+					"raw": "{{endpoint-api3.0}}/users?lang=en&callback=http://localhost:8080/&notify=true",
+					"protocol": "{{endpoint-api3.0}}/users?lang=en&callback=http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"&notify=true"
+					],
+					"query": [
+						{
+							"key": "lang",
+							"value": "en",
+							"equals": true
+						},
+						{
+							"key": "callback",
+							"value": "http://localhost:8080/",
+							"equals": true
+						},
+						{
+							"key": "notify",
+							"value": "true",
+							"equals": true
+						}
+					]
+				},
+				"description": "Adding user with below fields...\n\n{\n  \"accountName\": \"string\",\n  \"address\": \"string\",\n  \"city\": \"string\",\n  \"confirmPassword\": \"string\",\n  \"contactNumber\": \"string\",\n  \"country\": \"string\",\n  \"currentStatus\": \"string\",\n  \"email\": \"string\",\n  \"emailVerified\": \"string\",\n  \"enterprise\": false,\n  \"enterpriseFederatedId\": \"string\",\n  \"enterpriseFederatedSource\": \"string\",\n  \"extraParams\": {},\n  \"firstName\": \"string\",\n  \"lastLoginTimeStamp\": \"string\",\n  \"lastName\": \"string\",\n  \"lastPwdSetTimeStamp\": \"string\",\n  \"lastUpdateTimeStamp\": \"string\",\n  \"locality\": \"string\",\n  \"password\": \"string\",\n  \"passwordPolicyType\": \"string\",\n  \"region\": \"string\",\n  \"roleList\": [\n    \"string\"\n  ],\n  \"socialFederatedIdOne\": \"string\",\n  \"socialFederatedIdThree\": \"string\",\n  \"socialFederatedIdTwo\": \"string\",\n  \"socialFederatedSourceOne\": \"string\",\n  \"socialFederatedSourceThree\": \"string\",\n  \"socialFederatedSourceTwo\": \"string\",\n  \"state\": \"string\",\n  \"status\": \"string\",\n  \"tenant\": \"string\",\n  \"userCreateTimeStamp\": \"string\",\n  \"uuid\": \"string\",\n  \"zipCode\": \"string\"\n}"
+			},
+			"response": []
+		},
+		{
+			"name": "13_Get User with Multiple UUIDs",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Get User with Multiple UUIDs\"] = responseCode.code === 200;",
+							"",
+							"//tests[\"Response time is less than 5 Seconds\"] = responseTime < 5000;"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "{{authheader}}",
+						"value": "{{authheadervalue}}"
+					}
+				],
+				"body": {},
+				"url": {
+					"raw": "{{endpoint-api3.0}}/users?lite=false&uuid={{uuid1}}&uuid={{uuid2}}&uuid={{uuid3}}",
+					"host": [
+						"{{endpoint-api3.0}}"
+					],
+					"path": [
+						"users"
+					],
+					"query": [
+						{
+							"key": "lite",
+							"value": "false",
+							"equals": true
+						},
+						{
+							"key": "uuid",
+							"value": "{{uuid1}}",
+							"equals": true
+						},
+						{
+							"key": "uuid",
+							"value": "{{uuid2}}",
+							"equals": true
+						},
+						{
+							"key": "uuid",
+							"value": "{{uuid3}}",
+							"equals": true
+						}
+					]
+				},
+				"description": "Approximately 22 UUIDs have been supplied in the request body to measure the response time of the server."
+			},
+			"response": []
+		},
+		{
+			"name": "14_Get User with UUID Lite - API 3.0",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);",
+							"",
+							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"",
+							"tests[\"Response time is less than 5 Seconds\"] = responseTime < 5000;"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "{{authheader}}",
+						"value": "{{authheadervalue}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{endpoint-api3.0}}/users?uuid={{uuid1}}&lite=true",
+					"host": [
+						"{{endpoint-api3.0}}"
+					],
+					"path": [
+						"users"
+					],
+					"query": [
+						{
+							"key": "uuid",
+							"value": "{{uuid1}}",
+							"equals": true
+						},
+						{
+							"key": "lite",
+							"value": "true",
+							"equals": true
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "15_Get User with Email ID Lite - API 3.0",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Status code is 200 OK\"] = responseCode.code === 200;"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "{{authheader}}",
+						"value": "{{authheadervalue}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{endpoint-api3.0}}/users?email={{email_encoded}}&lite=true",
+					"host": [
+						"{{endpoint-api3.0}}"
+					],
+					"path": [
+						"users"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "{{email_encoded}}",
+							"equals": true
+						},
+						{
+							"key": "lite",
+							"value": "true",
+							"equals": true
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "16_Profile API to Update the User - API 2.0",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Profile API - 2.0 to update the user\"] = responseCode.code === 200;"
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"\r",
+							"var rawEmail = \"rajil_contractor+tid\" + Date.now() + \"@trimble.com\";\r",
+							"\r",
+							"var replace1 = rawEmail.replace(\"@\",\"%40\");\r",
+							"var replace2 = replace1.replace(\"+\",\"%2b\");\r",
+							"postman.setEnvironmentVariable(\"email\", rawEmail);\r",
+							"postman.setEnvironmentVariable(\"email_encoded2\", replace2);\r",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "{{authheader}}",
+						"value": "{{authheadervalue}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"firstName\"    : \"Razil\",\r\n  \"lastName\"    : \"Cont\",\r\n  \"contactNumber\"  : \"12345678997\",\r\n  \"email\"      : \"{{email}}\",\r\n  \r\n   \"extraParams\"     : {\"recipient-display-user-name\": \"rkreddy\", \"domain-name-1\": \"wow-super.com\",\"application-name\": \"TID-TEST\"},\r\n  \"status\"      : \"true\"\r\n}"
+				},
+				"url": {
+					"raw": "{{endpoint-api3.0}}/users/profiles?uuid={{uuid1}}&lang=en&enableEmailVerification=true",
+					"host": [
+						"{{endpoint-api3.0}}"
+					],
+					"path": [
+						"users",
+						"profiles"
+					],
+					"query": [
+						{
+							"key": "uuid",
+							"value": "{{uuid1}}",
+							"equals": true
+						},
+						{
+							"key": "lang",
+							"value": "en",
+							"equals": true
+						},
+						{
+							"key": "enableEmailVerification",
+							"value": "true",
+							"equals": true
+						}
+					]
+				},
+				"description": "As of now, there is not API in 3.0 to update the user.....\n\nThis Profile API is used to update the user."
+			},
+			"response": []
+		},
+		{
+			"name": "17_Update User by Email  - API 3.0",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"User updated by Email, successfully with API 3.0\"] = responseCode.code === 200;"
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"//postman.setEnvironmentVariable(\"email\", \"rajil_contractor+\" + Date.now() + \"@trimble.com\");",
+							"",
+							"var rawEmail = \"rajil_contractor+tid\" + Date.now() + \"@trimble.com\";",
+							"",
+							"var replace1 = rawEmail.replace(\"@\",\"%40\");",
+							"var replace2 = replace1.replace(\"+\",\"%2b\");",
+							"postman.setEnvironmentVariable(\"remail\", rawEmail);",
+							"",
+							"",
+							"var current_env = postman.getEnvironmentVariable(\"env2\");",
+							"",
+							"if (current_env === \"APIManager\"){",
+							"    ",
+							"    postman.setEnvironmentVariable(\"km_url\",\"https://api-dev.trimble.com/t/trimble.com/tid-api-new/3.0\");",
+							"}",
+							"",
+							"if (current_env === \"KeyManager\"){",
+							"    ",
+							"    postman.setEnvironmentVariable(\"km_url\",\"https://identity-dev.trimble.com/identity-service-v3.0\");",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "{{authheader}}",
+						"value": "{{authheadervalue}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"firstName\"     : \"Senthil Kumar\",\n  \"lastName\"      : \"Chandrasekaran\",\n  \"contactNumber\" : \"342343242dfgdgg\",\n  \"roleList\"      : [\"Internal/everyone\"],\n  \"email\"         : \"{{email}}\",\n  \"status\"        : \"true\",\n  \"address\"\t\t  : \"26820 Commercentre Dr. \\rLake Forest, CA 92630\"\n}\n"
+				},
+				"url": {
+					"raw": "{{endpoint-api3.0}}/users?lang=en&email={{email_encoded}}",
+					"host": [
+						"{{endpoint-api3.0}}"
+					],
+					"path": [
+						"users"
+					],
+					"query": [
+						{
+							"key": "lang",
+							"value": "en",
+							"equals": true
+						},
+						{
+							"key": "email",
+							"value": "{{email_encoded}}",
+							"equals": true
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "18_Update User by UUID  - API 3.0",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"User updated by UUID, successfully with API 3.0\"] = responseCode.code === 200;"
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"postman.setEnvironmentVariable(\"account\", \"trimble.com\");",
+							"postman.setEnvironmentVariable(\"user\", \"Razil-\"+ Date.now());",
+							"",
+							"var rawEmail = \"rajil_contractor+tid\" + Date.now() + \"@trimble.com\";",
+							"",
+							"var replace1 = rawEmail.replace(\"@\",\"@\");",
+							"var replace2 = replace1.replace(\"+\",\"%2b\");",
+							"postman.setEnvironmentVariable(\"email\", rawEmail);",
+							"postman.setEnvironmentVariable(\"email_encoded\", replace2);"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "{{authheader}}",
+						"value": "{{authheadervalue}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"firstName\"     : \"Senthil Kumarannnnnnnnnnn\",\n  \"lastName\"      : \"Chandrasekaran\",\n  \"contactNumber\" : \"342343242dfgdgg\",\n  \"roleList\"      : [\"Internal/everyone\"],\n  \"email\"         : \"{{email}}\",\n  \"status\"        : \"true\",\n  \"address\"      : \"26000 Commercentre Dr. \\rLake Forest, CA 92633\"\n}\n"
+				},
+				"url": {
+					"raw": "{{endpoint-api3.0}}/users?lang=en&uuid={{uuid1}}",
+					"host": [
+						"{{endpoint-api3.0}}"
+					],
+					"path": [
+						"users"
+					],
+					"query": [
+						{
+							"key": "lang",
+							"value": "en",
+							"equals": true
+						},
+						{
+							"key": "uuid",
+							"value": "{{uuid1}}",
+							"equals": true
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": [
+				{
+					"id": "c85a9fad-c3c4-40e9-b954-9b364f7ebd3e",
+					"name": "JWT ",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"enabled": true,
+								"description": "The mime type of this content",
+								"disabled": false
+							},
+							{
+								"key": "{{authheader}}",
+								"value": "{{authheadervalue}}",
+								"enabled": true,
+								"disabled": false
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\"     : \"Senthil Kumar\",\n  \"lastName\"      : \"Chandrasekaran\",\n  \"contactNumber\" : \"1111111111\",\n  \"roleList\"      : [\"UserProvisionAdmin\"],\n  \"email\"         : \"rajil_contractor+tid1493014191298@trimble.com\",\n  \"status\"        : \"true\"\n}\n"
+						},
+						"url": {
+							"raw": "{{endpoint}}/t/trimble.com/identity/3.0/users?lang=en&uuid={{uuid1}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"t",
+								"trimble.com",
+								"identity",
+								"3.0",
+								"users"
+							],
+							"query": [
+								{
+									"key": "lang",
+									"value": "en"
+								},
+								{
+									"key": "uuid",
+									"value": "{{uuid1}}"
+								}
+							]
+						}
+					},
+					"status": "Unauthorized",
+					"code": 401,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate",
+							"name": "Cache-Control",
+							"description": ""
+						},
+						{
+							"key": "Connection",
+							"value": "Close",
+							"name": "Connection",
+							"description": ""
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json;charset=ISO-8859-1",
+							"name": "Content-Type",
+							"description": ""
+						},
+						{
+							"key": "Date",
+							"value": "Mon, 24 Apr 2017 06:13:10 GMT",
+							"name": "Date",
+							"description": ""
+						},
+						{
+							"key": "Expires",
+							"value": "0",
+							"name": "Expires",
+							"description": ""
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache",
+							"name": "Pragma",
+							"description": ""
+						},
+						{
+							"key": "Server",
+							"value": "nginx",
+							"name": "Server",
+							"description": ""
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000 ; includeSubDomains",
+							"name": "Strict-Transport-Security",
+							"description": ""
+						},
+						{
+							"key": "TPaaS-Request-Id",
+							"value": "1116-1493014390.121-155.63.241.22-506-4186",
+							"name": "TPaaS-Request-Id",
+							"description": ""
+						},
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff",
+							"name": "X-Content-Type-Options",
+							"description": ""
+						},
+						{
+							"key": "X-Correlation-ID",
+							"value": "9c030ca3-1eda-43bb-b5d0-479f215bde82",
+							"name": "X-Correlation-ID",
+							"description": ""
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY",
+							"name": "X-Frame-Options",
+							"description": ""
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block",
+							"name": "X-XSS-Protection",
+							"description": ""
+						},
+						{
+							"key": "transfer-encoding",
+							"value": "chunked",
+							"name": "transfer-encoding",
+							"description": ""
+						}
+					],
+					"cookie": [
+						{
+							"expires": "Tue Jan 19 2038 03:14:07 GMT+0530 (India Standard Time)",
+							"httpOnly": true,
+							"domain": "api-dev.trimble.com",
+							"path": "/identity-service-v3.0/",
+							"secure": true,
+							"value": "7301E3868EC3C072E0E486C39045B2D0",
+							"key": "JSESSIONID"
+						},
+						{
+							"expires": "Tue Jan 19 2038 03:14:07 GMT+0530 (India Standard Time)",
+							"httpOnly": true,
+							"domain": "api-dev.trimble.com",
+							"path": "/identity-service-v3.0/",
+							"secure": true,
+							"value": "A71B2BAD123E02CC7AA3219FAA04510D1945E16232F021AACC4B9C0CF895D2982A4A318F2A70560E976AF99063D2713D380A36BAEF146CB37BCF44CE99EF1622C3F6AE3DFEF41D8B0FA293D9FB7D5BAADD51E76021",
+							"key": "AWSELB"
+						}
+					],
+					"responseTime": "1868",
+					"body": "{\"status\":401,\"code\":9002,\"message\":\"The logged in user does not have the privilege to perform the operation, Reason - No JWT token found in request headers.\",\"link\":\"Please provide this id to TPaaS, while contacting, X-Correlation-ID: 9c030ca3-1eda-43bb-b5d0-479f215bde82\",\"developerMessage\":\"com.trimble.paas.identity.exception.error.IdentityException: [Message: The logged in user does not have the privilege to perform the operation, Reason - No JWT token found in request headers., Cause: NotAuthorizedException [code=401, description=No JWT token found in request headers.]]\\n\\tat com.trimble.paas.identity.authentication.AuthenticationFailureHandler.onAuthenticationFailure(AuthenticationFailureHandler.java:57)\\n\\tat com.trimble.paas.identity.authentication.JWTTokenAuthenticationFilter.unsuccessfulAuthentication(JWTTokenAuthenticationFilter.java:120)\\n\\tat org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:230)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:121)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:66)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:105)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:56)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:214)\\n\\tat org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:177)\\n\\tat org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:346)\\n\\tat org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:262)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:197)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.boot.actuate.autoconfigure.MetricsFilter.doFilterInternal(MetricsFilter.java:107)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter.doFilter(ErrorPageFilter.java:117)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter.access$000(ErrorPageFilter.java:61)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter$1.doFilterInternal(ErrorPageFilter.java:92)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter.doFilter(ErrorPageFilter.java:110)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:220)\\n\\tat org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:122)\\n\\tat org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:501)\\n\\tat org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:171)\\n\\tat org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:103)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CompositeValve.continueInvocation(CompositeValve.java:178)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CarbonTomcatValve$1.invoke(CarbonTomcatValve.java:47)\\n\\tat org.wso2.carbon.webapp.mgt.TenantLazyLoaderValve.invoke(TenantLazyLoaderValve.java:57)\\n\\tat org.wso2.carbon.tomcat.ext.valves.TomcatValveContainer.invokeValves(TomcatValveContainer.java:47)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CompositeValve.invoke(CompositeValve.java:141)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CarbonStuckThreadDetectionValve.invoke(CarbonStuckThreadDetectionValve.java:156)\\n\\tat org.wso2.carbon.ui.valve.XSSValve.invoke(XSSValve.java:118)\\n\\tat org.wso2.carbon.ui.valve.CSRFValve.invoke(CSRFValve.java:72)\\n\\tat org.apache.catalina.valves.AccessLogValve.invoke(AccessLogValve.java:950)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CarbonContextCreatorValve.invoke(CarbonContextCreatorValve.java:52)\\n\\tat org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:116)\\n\\tat org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:408)\\n\\tat org.apache.coyote.http11.AbstractHttp11Processor.process(AbstractHttp11Processor.java:1070)\\n\\tat org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:611)\\n\\tat org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1736)\\n\\tat org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.run(NioEndpoint.java:1695)\\n\\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)\\n\\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)\\n\\tat org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)\\n\\tat java.lang.Thread.run(Thread.java:745)\\nCaused by: NotAuthorizedException [code=401, description=No JWT token found in request headers.]\\n\\tat com.trimble.paas.identity.authentication.JWTTokenAuthenticationFilter.attemptAuthentication(JWTTokenAuthenticationFilter.java:90)\\n\\tat org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:212)\\n\\t... 57 more\\nCaused by:\\nNotAuthorizedException [code=401, description=No JWT token found in request headers.]\\n\\tat com.trimble.paas.identity.authentication.JWTTokenAuthenticationFilter.attemptAuthentication(JWTTokenAuthenticationFilter.java:90)\\n\\tat org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:212)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:121)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:66)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:105)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:56)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:214)\\n\\tat org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:177)\\n\\tat org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:346)\\n\\tat org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:262)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:197)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.boot.actuate.autoconfigure.MetricsFilter.doFilterInternal(MetricsFilter.java:107)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter.doFilter(ErrorPageFilter.java:117)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter.access$000(ErrorPageFilter.java:61)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter$1.doFilterInternal(ErrorPageFilter.java:92)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter.doFilter(ErrorPageFilter.java:110)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:220)\\n\\tat org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:122)\\n\\tat org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:501)\\n\\tat org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:171)\\n\\tat org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:103)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CompositeValve.continueInvocation(CompositeValve.java:178)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CarbonTomcatValve$1.invoke(CarbonTomcatValve.java:47)\\n\\tat org.wso2.carbon.webapp.mgt.TenantLazyLoaderValve.invoke(TenantLazyLoaderValve.java:57)\\n\\tat org.wso2.carbon.tomcat.ext.valves.TomcatValveContainer.invokeValves(TomcatValveContainer.java:47)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CompositeValve.invoke(CompositeValve.java:141)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CarbonStuckThreadDetectionValve.invoke(CarbonStuckThreadDetectionValve.java:156)\\n\\tat org.wso2.carbon.ui.valve.XSSValve.invoke(XSSValve.java:118)\\n\\tat org.wso2.carbon.ui.valve.CSRFValve.invoke(CSRFValve.java:72)\\n\\tat org.apache.catalina.valves.AccessLogValve.invoke(AccessLogValve.java:950)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CarbonContextCreatorValve.invoke(CarbonContextCreatorValve.java:52)\\n\\tat org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:116)\\n\\tat org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:408)\\n\\tat org.apache.coyote.http11.AbstractHttp11Processor.process(AbstractHttp11Processor.java:1070)\\n\\tat org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:611)\\n\\tat org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1736)\\n\\tat org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.run(NioEndpoint.java:1695)\\n\\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)\\n\\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)\\n\\tat org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)\\n\\tat java.lang.Thread.run(Thread.java:745)\\n\"}"
+				}
+			]
+		},
+		{
+			"name": "19_Change Password By EMAIL with another endpoint API 3.0",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Change Password By EMAIL with another endpoint API 3.0 \"] = responseCode.code === 200;"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "{{authheader}}",
+						"value": "{{authheadervalue}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"confirmPassword\": \"Trimble@123\",\r\n  \"newPassword\": \"Trimble@123\"\r\n}"
+				},
+				"url": {
+					"raw": "{{endpoint-api3.0}}/users/password/email={{email_encoded}}",
+					"host": [
+						"{{endpoint-api3.0}}"
+					],
+					"path": [
+						"users",
+						"password",
+						"email={{email_encoded}}"
+					]
+				},
+				"description": "Changing the password by email with new endpoint, introduced in TID 6.3 release \n\nRef: https://ejira.trimble.com/browse/TPAAS-4545\n\nThe new endpoint is : https://api-stg.trimble.com/t/trimble.com/identity/3.0/users/password?email={{email}}"
+			},
+			"response": []
+		},
+		{
+			"name": "20_Change Password By UUID with new endpoint API 3.0",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Change Password By UUID with new endpoint API 3.0\"] = responseCode.code === 200;"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "{{authheader}}",
+						"value": "{{authheadervalue}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \r\n \"newPassword\": \"Atroad@123\",\r\n  \"confirmPassword\": \"Atroad@123\"\r\n  \r\n}"
+				},
+				"url": {
+					"raw": "{{endpoint-api3.0}}/users/password/uuid={{uuid1}}",
+					"host": [
+						"{{endpoint-api3.0}}"
+					],
+					"path": [
+						"users",
+						"password",
+						"uuid={{uuid1}}"
+					]
+				},
+				"description": "Changing the password by email with new endpoint, introduced in TID 6.3 release \n\nRef: https://ejira.trimble.com/browse/TPAAS-4545\n\nThe new endpoint is : https://api-stg.trimble.com/t/trimble.com/identity/3.0/users/password?uuid={{uuid}}"
+			},
+			"response": [
+				{
+					"id": "ad4924e4-5a12-43aa-b079-c5d4b42ac8f3",
+					"name": "Change PWD",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "{{authheader}}",
+								"value": "{{authheadervalue}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \r\n \"newPassword\": \"Atroad@123\",\r\n  \"confirmPassword\": \"Atroad@123\"\r\n  \r\n}"
+						},
+						"url": {
+							"raw": "{{endpoint-api3.0}}/users/password/uuid/{{uuid1}}",
+							"host": [
+								"{{endpoint-api3.0}}"
+							],
+							"path": [
+								"users",
+								"password",
+								"uuid",
+								"{{uuid1}}"
+							]
+						},
+						"description": ""
+					},
+					"status": "Internal Server Error",
+					"code": 500,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*",
+							"name": "Access-Control-Allow-Origin",
+							"description": ""
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate",
+							"name": "Cache-Control",
+							"description": ""
+						},
+						{
+							"key": "Connection",
+							"value": "Close",
+							"name": "Connection",
+							"description": ""
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": ""
+						},
+						{
+							"key": "CorrelationId",
+							"value": "9e794c25-69e1-44c4-b4d7-2aa9acc7cf27",
+							"name": "CorrelationId",
+							"description": ""
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 21 Feb 2017 11:40:37 GMT",
+							"name": "Date",
+							"description": ""
+						},
+						{
+							"key": "Expires",
+							"value": "0",
+							"name": "Expires",
+							"description": ""
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache",
+							"name": "Pragma",
+							"description": ""
+						},
+						{
+							"key": "Server",
+							"value": "nginx",
+							"name": "Server",
+							"description": ""
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000 ; includeSubDomains",
+							"name": "Strict-Transport-Security",
+							"description": ""
+						},
+						{
+							"key": "TPaaS-Request-Id",
+							"value": "26688-1487677237.372-155.63.241.22-498-33884953",
+							"name": "TPaaS-Request-Id",
+							"description": ""
+						},
+						{
+							"key": "X-Application-Context",
+							"value": "application",
+							"name": "X-Application-Context",
+							"description": ""
+						},
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff",
+							"name": "X-Content-Type-Options",
+							"description": ""
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY",
+							"name": "X-Frame-Options",
+							"description": ""
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block",
+							"name": "X-XSS-Protection",
+							"description": ""
+						},
+						{
+							"key": "transfer-encoding",
+							"value": "chunked",
+							"name": "transfer-encoding",
+							"description": ""
+						}
+					],
+					"cookie": [],
+					"responseTime": "2571",
+					"body": "{\"status\":500,\"code\":9000,\"message\":\"An internal error occurred while performing this operation, Reason - null\",\"link\":\"Please provide this id to TPaaS, while contacting, CorrelationId: 9e794c25-69e1-44c4-b4d7-2aa9acc7cf27\",\"developerMessage\":\"com.trimble.paas.identity.exception.error.IdentityException: [Message: An internal error occurred while performing this operation, Reason - null, Cause: java.lang.NullPointerException]\\n\\tat com.trimble.paas.identity.exception.handler.TidExceptionHandler.handleException(TidExceptionHandler.java:87)\\n\\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\\n\\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\\n\\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\\n\\tat java.lang.reflect.Method.invoke(Method.java:606)\\n\\tat org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:220)\\n\\tat org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:134)\\n\\tat org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:116)\\n\\tat org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver.doResolveHandlerMethodException(ExceptionHandlerExceptionResolver.java:381)\\n\\tat org.springframework.web.servlet.handler.AbstractHandlerMethodExceptionResolver.doResolveException(AbstractHandlerMethodExceptionResolver.java:59)\\n\\tat org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver.resolveException(AbstractHandlerExceptionResolver.java:136)\\n\\tat org.springframework.web.servlet.handler.HandlerExceptionResolverComposite.resolveException(HandlerExceptionResolverComposite.java:74)\\n\\tat org.springframework.web.servlet.DispatcherServlet.processHandlerException(DispatcherServlet.java:1193)\\n\\tat org.springframework.web.servlet.DispatcherServlet.processDispatchResult(DispatcherServlet.java:1030)\\n\\tat org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:980)\\n\\tat org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:897)\\n\\tat org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:970)\\n\\tat org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:872)\\n\\tat javax.servlet.http.HttpServlet.service(HttpServlet.java:755)\\n\\tat org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:846)\\n\\tat javax.servlet.http.HttpServlet.service(HttpServlet.java:848)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:303)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.boot.web.filter.ApplicationContextHeaderFilter.doFilterInternal(ApplicationContextHeaderFilter.java:55)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat com.trimble.paas.identity.authentication.JWTTokenAuthenticationFilter.successfulAuthentication(JWTTokenAuthenticationFilter.java:113)\\n\\tat org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:240)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.boot.actuate.trace.WebRequestTraceFilter.doFilterInternal(WebRequestTraceFilter.java:105)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:317)\\n\\tat org.springframework.security.web.access.intercept.FilterSecurityInterceptor.invoke(FilterSecurityInterceptor.java:127)\\n\\tat org.springframework.security.web.access.intercept.FilterSecurityInterceptor.doFilter(FilterSecurityInterceptor.java:91)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:115)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:137)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:111)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:169)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat com.trimble.paas.identity.authentication.JWTTokenAuthenticationFilter.successfulAuthentication(JWTTokenAuthenticationFilter.java:113)\\n\\tat org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:240)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:121)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:66)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:105)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:56)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:214)\\n\\tat org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:177)\\n\\tat org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:346)\\n\\tat org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:262)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:197)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.boot.actuate.autoconfigure.MetricsFilter.doFilterInternal(MetricsFilter.java:107)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter.doFilter(ErrorPageFilter.java:117)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter.access$000(ErrorPageFilter.java:61)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter$1.doFilterInternal(ErrorPageFilter.java:92)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter.doFilter(ErrorPageFilter.java:110)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:220)\\n\\tat org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:122)\\n\\tat org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:501)\\n\\tat org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:171)\\n\\tat org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:103)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CompositeValve.continueInvocation(CompositeValve.java:178)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CarbonTomcatValve$1.invoke(CarbonTomcatValve.java:47)\\n\\tat org.wso2.carbon.webapp.mgt.TenantLazyLoaderValve.invoke(TenantLazyLoaderValve.java:57)\\n\\tat org.wso2.carbon.tomcat.ext.valves.TomcatValveContainer.invokeValves(TomcatValveContainer.java:47)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CompositeValve.invoke(CompositeValve.java:141)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CarbonStuckThreadDetectionValve.invoke(CarbonStuckThreadDetectionValve.java:156)\\n\\tat org.wso2.carbon.ui.valve.XSSValve.invoke(XSSValve.java:118)\\n\\tat org.wso2.carbon.ui.valve.CSRFValve.invoke(CSRFValve.java:72)\\n\\tat org.apache.catalina.valves.AccessLogValve.invoke(AccessLogValve.java:950)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CarbonContextCreatorValve.invoke(CarbonContextCreatorValve.java:52)\\n\\tat org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:116)\\n\\tat org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:408)\\n\\tat org.apache.coyote.http11.AbstractHttp11Processor.process(AbstractHttp11Processor.java:1070)\\n\\tat org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:611)\\n\\tat org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1736)\\n\\tat org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.run(NioEndpoint.java:1695)\\n\\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)\\n\\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)\\n\\tat org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)\\n\\tat java.lang.Thread.run(Thread.java:745)\\nCaused by: java.lang.NullPointerException\\n\\tat com.trimble.paas.identity.utils.Wso2Utils.getUserStoreManager(Wso2Utils.java:194)\\n\\tat com.trimble.paas.identity.service.impl.Wso2UserControllerServiceImpl.updateCredentialForxTenant(Wso2UserControllerServiceImpl.java:547)\\n\\tat com.trimble.paas.identity.service.impl.Wso2UserControllerServiceImpl.changePasswordByUuid(Wso2UserControllerServiceImpl.java:463)\\n\\tat com.trimble.paas.identity.controller.UserController.changePasswordByUuid(UserController.java:154)\\n\\tat com.trimble.paas.identity.controller.UserController$$FastClassBySpringCGLIB$$849607d2.invoke(<generated>)\\n\\tat org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:204)\\n\\tat org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:720)\\n\\tat org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:157)\\n\\tat org.springframework.security.access.intercept.aopalliance.MethodSecurityInterceptor.invoke(MethodSecurityInterceptor.java:69)\\n\\tat org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)\\n\\tat org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:655)\\n\\tat com.trimble.paas.identity.controller.UserController$$EnhancerBySpringCGLIB$$ee7dd5e8.changePasswordByUuid(<generated>)\\n\\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\\n\\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\\n\\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\\n\\tat java.lang.reflect.Method.invoke(Method.java:606)\\n\\tat org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:220)\\n\\tat org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:134)\\n\\tat org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:116)\\n\\tat org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:827)\\n\\tat org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:738)\\n\\tat org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:85)\\n\\tat org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:963)\\n\\t... 93 more\\nCaused by:\\njava.lang.NullPointerException\\n\\tat com.trimble.paas.identity.utils.Wso2Utils.getUserStoreManager(Wso2Utils.java:194)\\n\\tat com.trimble.paas.identity.service.impl.Wso2UserControllerServiceImpl.updateCredentialForxTenant(Wso2UserControllerServiceImpl.java:547)\\n\\tat com.trimble.paas.identity.service.impl.Wso2UserControllerServiceImpl.changePasswordByUuid(Wso2UserControllerServiceImpl.java:463)\\n\\tat com.trimble.paas.identity.controller.UserController.changePasswordByUuid(UserController.java:154)\\n\\tat com.trimble.paas.identity.controller.UserController$$FastClassBySpringCGLIB$$849607d2.invoke(<generated>)\\n\\tat org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:204)\\n\\tat org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:720)\\n\\tat org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:157)\\n\\tat org.springframework.security.access.intercept.aopalliance.MethodSecurityInterceptor.invoke(MethodSecurityInterceptor.java:69)\\n\\tat org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)\\n\\tat org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:655)\\n\\tat com.trimble.paas.identity.controller.UserController$$EnhancerBySpringCGLIB$$ee7dd5e8.changePasswordByUuid(<generated>)\\n\\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\\n\\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\\n\\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\\n\\tat java.lang.reflect.Method.invoke(Method.java:606)\\n\\tat org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:220)\\n\\tat org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:134)\\n\\tat org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:116)\\n\\tat org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:827)\\n\\tat org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:738)\\n\\tat org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:85)\\n\\tat org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:963)\\n\\tat org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:897)\\n\\tat org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:970)\\n\\tat org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:872)\\n\\tat javax.servlet.http.HttpServlet.service(HttpServlet.java:755)\\n\\tat org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:846)\\n\\tat javax.servlet.http.HttpServlet.service(HttpServlet.java:848)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:303)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.boot.web.filter.ApplicationContextHeaderFilter.doFilterInternal(ApplicationContextHeaderFilter.java:55)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat com.trimble.paas.identity.authentication.JWTTokenAuthenticationFilter.successfulAuthentication(JWTTokenAuthenticationFilter.java:113)\\n\\tat org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:240)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.boot.actuate.trace.WebRequestTraceFilter.doFilterInternal(WebRequestTraceFilter.java:105)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:317)\\n\\tat org.springframework.security.web.access.intercept.FilterSecurityInterceptor.invoke(FilterSecurityInterceptor.java:127)\\n\\tat org.springframework.security.web.access.intercept.FilterSecurityInterceptor.doFilter(FilterSecurityInterceptor.java:91)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:115)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:137)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:111)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:169)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat com.trimble.paas.identity.authentication.JWTTokenAuthenticationFilter.successfulAuthentication(JWTTokenAuthenticationFilter.java:113)\\n\\tat org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:240)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:121)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:66)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:105)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:56)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:331)\\n\\tat org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:214)\\n\\tat org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:177)\\n\\tat org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:346)\\n\\tat org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:262)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:197)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.boot.actuate.autoconfigure.MetricsFilter.doFilterInternal(MetricsFilter.java:107)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter.doFilter(ErrorPageFilter.java:117)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter.access$000(ErrorPageFilter.java:61)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter$1.doFilterInternal(ErrorPageFilter.java:92)\\n\\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\\n\\tat org.springframework.boot.web.support.ErrorPageFilter.doFilter(ErrorPageFilter.java:110)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)\\n\\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)\\n\\tat org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:220)\\n\\tat org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:122)\\n\\tat org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:501)\\n\\tat org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:171)\\n\\tat org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:103)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CompositeValve.continueInvocation(CompositeValve.java:178)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CarbonTomcatValve$1.invoke(CarbonTomcatValve.java:47)\\n\\tat org.wso2.carbon.webapp.mgt.TenantLazyLoaderValve.invoke(TenantLazyLoaderValve.java:57)\\n\\tat org.wso2.carbon.tomcat.ext.valves.TomcatValveContainer.invokeValves(TomcatValveContainer.java:47)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CompositeValve.invoke(CompositeValve.java:141)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CarbonStuckThreadDetectionValve.invoke(CarbonStuckThreadDetectionValve.java:156)\\n\\tat org.wso2.carbon.ui.valve.XSSValve.invoke(XSSValve.java:118)\\n\\tat org.wso2.carbon.ui.valve.CSRFValve.invoke(CSRFValve.java:72)\\n\\tat org.apache.catalina.valves.AccessLogValve.invoke(AccessLogValve.java:950)\\n\\tat org.wso2.carbon.tomcat.ext.valves.CarbonContextCreatorValve.invoke(CarbonContextCreatorValve.java:52)\\n\\tat org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:116)\\n\\tat org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:408)\\n\\tat org.apache.coyote.http11.AbstractHttp11Processor.process(AbstractHttp11Processor.java:1070)\\n\\tat org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:611)\\n\\tat org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1736)\\n\\tat org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.run(NioEndpoint.java:1695)\\n\\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)\\n\\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)\\n\\tat org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)\\n\\tat java.lang.Thread.run(Thread.java:745)\\n\"}"
+				}
+			]
+		},
+		{
+			"name": "21_Forgot Pwd by UUID with new endpiont API 3.0",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Forgot Pwd by UUID with new endpiont API 3.0\"] = responseCode.code === 200;"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "{{authheader}}",
+						"value": "{{authheadervalue}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{endpoint-api3.0}}/users/forgotpassword?uuid={{uuid1}}&application=APICloud&lang=it&callback=http%3A%2F%2Flocalhost%3A8080%2F",
+					"host": [
+						"{{endpoint-api3.0}}"
+					],
+					"path": [
+						"users",
+						"forgotpassword"
+					],
+					"query": [
+						{
+							"key": "uuid",
+							"value": "{{uuid1}}",
+							"equals": true
+						},
+						{
+							"key": "application",
+							"value": "APICloud",
+							"equals": true
+						},
+						{
+							"key": "lang",
+							"value": "it",
+							"equals": true
+						},
+						{
+							"key": "callback",
+							"value": "http%3A%2F%2Flocalhost%3A8080%2F",
+							"equals": true
+						}
+					]
+				},
+				"description": "forgot password api by UUID with new endpoint, introduced in TID 6.3 release \n\nRef: https://ejira.trimble.com/browse/TPAAS-4545\n\nThe new endpoint is : https://api-stg.trimble.com/t/trimble.com/identity/3.0/users/password?uuid={{uuid}}"
+			},
+			"response": []
+		},
+		{
+			"name": "22_Forgot Pwd by EMAIL with new end point - API 3.0",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Forgot Pwd by EMAIL with new end point - API 3.0\"] = responseCode.code === 200;"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "{{authheader}}",
+						"value": "{{authheadervalue}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{endpoint-api3.0}}/users/forgotpassword?email={{email_encoded}}&application=APICloud&lang=en&callback=http%3A%2F%2Flocalhost%3A8080%2F",
+					"host": [
+						"{{endpoint-api3.0}}"
+					],
+					"path": [
+						"users",
+						"forgotpassword"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "{{email_encoded}}",
+							"equals": true
+						},
+						{
+							"key": "application",
+							"value": "APICloud",
+							"equals": true
+						},
+						{
+							"key": "lang",
+							"value": "en",
+							"equals": true
+						},
+						{
+							"key": "callback",
+							"value": "http%3A%2F%2Flocalhost%3A8080%2F",
+							"equals": true
+						}
+					]
+				},
+				"description": "forgot password api by email with new endpoint, introduced in TID 6.3 release \n\nRef: https://ejira.trimble.com/browse/TPAAS-4545\n\nThe new endpoint is : https://api-stg.trimble.com/t/trimble.com/identity/3.0/users/password?uuid={{uuid}}"
+			},
+			"response": []
+		},
+		{
+			"name": "23_Password Policy - Add User across accounts - API 2.0",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"var data = JSON.parse(responseBody);",
+							"postman.setEnvironmentVariable(\"ppuuid\", data.uuid);",
+							"",
+							"",
+							"tests[\"Password Policy - Add User with passwordPolicyType as HIGH - API 2.0\"] = responseCode.code === 201;"
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"postman.setEnvironmentVariable(\"ppuser\", \"TestUser\"+ Date.now());",
+							"postman.setEnvironmentVariable(\"ppaccount\", \"TestAccount\"+ Date.now() + \".com\");"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "{{authheader}}",
+						"value": "{{authheadervalue}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"userName\"    : \"{{ppuser}}\",\n  \"firstName\"    : \"Razil\",\n  \"lastName\"    : \"Contractor\",\n  \"password\"     : \"Password@123\", \n  \"repassword\"     : \"Password@123\",\n  \"contactNumber\"  : \"1231299999\",\n  \"email\"      : \"rajil_contractor+{{ppuser}}@trimble.com\",\n  \"isActive\": true,\n  \"passwordPolicyType\": \"HIGH\",\n  \"roleList\"    : [\"UserProvisionAdmin\"]\n}"
+				},
+				"url": {
+					"raw": "{{endpoint-api2.0}}/accounts/{{ppaccount}}/users?type={{acc_type}}",
+					"host": [
+						"{{endpoint-api2.0}}"
+					],
+					"path": [
+						"accounts",
+						"{{ppaccount}}",
+						"users"
+					],
+					"query": [
+						{
+							"key": "type",
+							"value": "{{acc_type}}",
+							"equals": true
+						}
+					]
+				},
+				"description": "User can be added into another account (cross tenant user);\n\nPattern: /accounts/{accountname}/users?type="
+			},
+			"response": []
+		},
+		{
+			"name": "24_Password Policy - Change Password of user across accounts based on Username - Error check",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"24_Password Policy - Change Password of user across accounts based on Username - Error check \"] = responseCode.code === 406;",
+							"tests[\"Password Policy violation - Password should be different from last 6 passwords.\"] = responseBody.has(\"Password should be different from last 6 passwords. - Password should be different from last 6 passwords\");"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "{{authheader}}",
+						"value": "{{authheadervalue}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \n  \"newPassword\"    : \"Password@123\",\n  \"confirmPassword\" : \"Password@123\"\n}"
+				},
+				"url": {
+					"raw": "{{endpoint-api2.0}}/accounts/{{ppaccount}}/users/{{ppuser}}/password",
+					"host": [
+						"{{endpoint-api2.0}}"
+					],
+					"path": [
+						"accounts",
+						"{{ppaccount}}",
+						"users",
+						"{{ppuser}}",
+						"password"
+					]
+				},
+				"description": "DeveopsAdmin user will be able to change the password of another user based on username;\n\nPattern: /accounts/{accountname}/users/{username}/password?type=username\n"
+			},
+			"response": []
+		},
+		{
+			"name": "25_Refresh Access Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"var data = JSON.parse(responseBody);\r",
+							"\r",
+							"postman.setGlobalVariable(\"tid_token\", data.access_token);\r",
+							"postman.setGlobalVariable(\"raAccess_Token\", data.access_token);\r",
+							"postman.setGlobalVariable(\"access_token\", data.access_token);\r",
+							"postman.setGlobalVariable(\"tid_id_token\", data.id_token);\r",
+							"postman.setGlobalVariable(\"tid_refresh_token\", data.refresh_token);\r",
+							"\r",
+							"tests[\"Refresh Access Token\"] = responseCode.code === 200;"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic {{base64key}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "grant_type=refresh_token&scope=openid&tenantDomain=trimble.com&refresh_token={{tid_refresh_token}}"
+				},
+				"url": {
+					"raw": "{{url}}/oauth2/token",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"oauth2",
+						"token"
+					]
+				},
+				"description": "View Account for given Account Name;\n\nPattern: /accounts/{accountname}"
+			},
+			"response": []
+		},
+		{
+			"name": "User - Add  copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Add New User with API 2.0\"] = responseCode.code === 201;"
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"postman.setEnvironmentVariable(\"account\", \"Razil-\"+ Date.now()+\".com\");",
+							"postman.setEnvironmentVariable(\"user\", \"Razli-\"+ Date.now());",
+							"postman.setEnvironmentVariable(\"emailId\", \"rajil_contractor+tid\" + Date.now() + \"@trimble.com\");"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "{{authheader}}",
+						"value": "{{authheadervalue}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"userName\"    :\"{{user}}\",\n  \"firstName\"    :\"Rajil\",\n  \"lastName\"    :\"Contractor\", \n  \"password\"     :\"Password @123\", \n  \"repassword\"     :\"Password @123\", \n  \"contactNumber\"  :\"asdfasdf\", \n  \"email\"      :\"{{emailId}}\",\n  \"roleList\"    :[\"UserProvisionAdmin\"],\n  \"passwordPolicyType\"  : \"default\"\n}"
+				},
+				"url": {
+					"raw": "{{endpoint-api3.0}}/t/trimble.com/identity/2.0/users?lang=en&notify=true",
+					"host": [
+						"{{endpoint-api3.0}}"
+					],
+					"path": [
+						"t",
+						"trimble.com",
+						"identity",
+						"2.0",
+						"users"
+					],
+					"query": [
+						{
+							"key": "lang",
+							"value": "en",
+							"equals": true
+						},
+						{
+							"key": "notify",
+							"value": "true",
+							"equals": true
+						}
+					]
+				},
+				"description": "Create an user specifying the language (for localization purpose) and the call back url that needs to be sent in mail for login purpose.\nNote: You can perform the operation with merely having the lang or just the callback or even with/without both; \n\nPattern: /users"
+			},
+			"response": []
+		}
+	]
+}
