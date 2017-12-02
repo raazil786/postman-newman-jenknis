@@ -808,11 +808,6 @@
 							"equals": true
 						},
 						{
-							"key": "callback",
-							"value": "http://localhost:8080/",
-							"equals": true
-						},
-						{
 							"key": "notify",
 							"value": "true",
 							"equals": true
