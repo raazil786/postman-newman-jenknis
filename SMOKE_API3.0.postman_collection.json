@@ -198,7 +198,7 @@
 					"raw": "{\r\n\r\n\"name\": \"R'C'\",\r\n\"firstName\": \"I'G'H\",\r\n\"lastName\": \"la'stnam'e\",\r\n\"password\": \"Password@123\",\r\n\"confirmPassword\": \"Password@123\",\r\n\"email\": \"{{email}}\",\r\n\"accountName\": \"{{account}}\",\r\n\"contactNumber\": \"123129999a\",\r\n\"roleList\": [\"UserProvisionAdmin\"],\r\n\"zipCode\" : \"52\"\r\n}\r\n"
 				},
 				"url": {
-					"raw": "{{endpoint-api3.0}}/users?lang=en&http://localhost:8080/&notify=false",
+					"raw": "{{endpoint-api3.0}}/users?lang=en&notify=false",
 					"protocol": "{{endpoint-api3.0}}/users?lang=en&http",
 					"host": [
 						"localhost"
