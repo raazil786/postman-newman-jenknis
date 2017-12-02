@@ -199,7 +199,7 @@
 				},
 				"url": {
 					"raw": "{{endpoint-api3.0}}/users?lang=en&notify=false",
-					"protocol": "{{endpoint-api3.0}}/users?lang=en&http",
+					"protocol": "{{endpoint-api3.0}}/users?lang=en",
 					"host": [
 						"localhost"
 					],
@@ -213,11 +213,7 @@
 							"value": "en",
 							"equals": true
 						},
-						{
-							"key": "http://localhost:8080/",
-							"value": "",
-							"equals": false
-						},
+
 						{
 							"key": "notify",
 							"value": "false",
