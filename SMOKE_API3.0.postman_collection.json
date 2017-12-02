@@ -796,7 +796,7 @@
 					"raw": "{\r\n\"name\": \"RC\",\r\n\"userName\"    : \"{{user}}\",\r\n\"firstName\": \"FirstName\",\r\n\"lastName\": \"lastname\",\r\n\"password\": \"Password@123\",\r\n\"confirmPassword\": \"Password@123\",\r\n\"email\": \"{{email}}\",\r\n\"accountName\": \"today-04-01-2017\",\r\n\"contactNumber\": \"123129999a\",\r\n\"roleList\": [\r\n        \"UserProvisionAdmin\"\r\n        ],\r\n\r\n\"address\":\"Tidel Park\",\r\n\"city\":\"Chennai\",\r\n\"Country\":\"India\",\r\n\"zipCode\" : \"52\",\r\n\"socialFederatedIdOne\": \"string_ONE\",\r\n  \"extraParams\"     : {\"recipient-display-user-name\": \"Rajil C\", \"domain-name-1\": \"wow-super.com\",\"application-name\": \"TID-TEST\"}\r\n}\r\n"
 				},
 				"url": {
-					"raw": "{{endpoint-api3.0}}/users?lang=en&callback=http://localhost:8080/&notify=true",
+					"raw": "{{endpoint-api3.0}}/users?lang=en&notify=true",
 					"protocol": "{{endpoint-api3.0}}/users?lang=en&callback=http",
 					"host": [
 						"localhost"
