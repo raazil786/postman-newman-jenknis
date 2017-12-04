@@ -4,7 +4,7 @@
   "description": "\"project for storing postman tests\"",
   "main": "index.js",
   "scripts": {
-    "api-tests": "newman run SMOKE_API3.0.postman_collection.json -e Razil_PROD.postman_environment.json --reporter cli,html --reporter-html-export rawResults.html"
+    "api-tests": "newman run SMOKE_API3.0.postman_collection.json -e Razil_PROD.postman_environment.json --reporter cli,html --reporter-html-export https://github.com/raazil786/postman-newman-jenknis/rawResults.html"
   },
   "author": "razil",
   "dependencies": {
