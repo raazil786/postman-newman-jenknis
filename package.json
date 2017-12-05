@@ -4,7 +4,7 @@
   "description": "\"project for storing postman tests\"",
   "main": "index.js",
   "scripts": {
-    "api-tests-prod": "newman run SMOKE_API3.0.postman_collection.json -e Razil_PROD.postman_environment.json --reporters cli,html --reporter-html-export C:\\Users\\rcontra\\.jenkins\\workspace\\jenkins_api_newman_tests\\html_reports\\rawResults.html",
+    "api-tests-prod": "newman run SMOKE_API3.0.postman_collection.json -e Razil_PROD.postman_environment.json --reporters cli,html --reporter-html-export C:\\Users\\rcontra\\.jenkins\\workspace\\del_now\\html_reports\\rawResults.html",
     "api-tests-qa": "newman run SMOKE_API3.0.postman_collection.json -e Razil_QA.postman_environment.json --reporters cli,html --reporter-html-export C:\\Users\\rcontra\\.jenkins\\workspace\\jenkins_api_newman_tests\\html_reports\\rawResults.html",
     "api-tests-dev": "newman run SMOKE_API3.0.postman_collection.json -e Razil_DEV.postman_environment.json --reporters cli,html --reporter-html-export C:\\Users\\rcontra\\.jenkins\\workspace\\jenkins_api_newman_tests\\html_reports\\rawResults.html"
   },
